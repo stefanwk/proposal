@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Text, View, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Map from './Map';
+import { Map } from './Map';
 
 function HomeScreen() {
   return (
@@ -13,10 +13,14 @@ function HomeScreen() {
   );
 }
 
+
+
 function SettingsScreen() {
+  const [level, setLevel] = useState(0);
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
+      <Text>Settings</Text>
+      <Button title={"Press "+level} onPress={() => {setLevel(level+1); console.log(level)}} />
     </View>
   );
 }
