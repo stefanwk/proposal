@@ -3,19 +3,12 @@ import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Map from './Map';
 
 function HomeScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Home!</Text>
-    </View>
-  );
-}
-
-function Map() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Mapa</Text>
     </View>
   );
 }
@@ -38,10 +31,10 @@ export default function App() {
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
-            if (route.name === 'Home') {
-              iconName = focused ? 'ios-information-circle' : 'ios-information-circle-outline';
-            } else if (route.name === 'Map') {
-              iconName = focused ? 'ios-map' : 'ios-map';
+            if (route.name === 'Clave') {
+              iconName = 'ios-key';
+            } else if (route.name === 'Mapa') {
+              iconName = 'ios-map';
             } else if (route.name === 'Settings') {
               iconName = focused ? 'ios-list-box' : 'ios-list';
             }
@@ -55,8 +48,8 @@ export default function App() {
           inactiveTintColor: 'gray',
         }}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Map" component={Map} />
+        <Tab.Screen name="Clave" component={HomeScreen} />
+        <Tab.Screen name="Mapa" component={Map} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     </NavigationContainer>
