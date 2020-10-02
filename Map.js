@@ -9,8 +9,8 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import MapView from 'react-native-maps'
 
-const LATITUDE_DELTA = 0.1;
-const LONGITUDE_DELTA = 0.1;
+const LATITUDE_DELTA = 0.05;
+const LONGITUDE_DELTA = 0.05;
 
 const initialRegion = {
   latitude: -39.29,
@@ -18,7 +18,15 @@ const initialRegion = {
   latitudeDelta: 10,
   longitudeDelta: 10,
 }
-const markers = [];
+const markers = [{
+    latitude:-39.296080,
+    longitude: -72.145870,
+    radius:100},
+  {
+    latitude: -39.287811,
+    longitude: -72.226085,
+    radius: 200
+  }];
 
 class MyMapView extends React.Component {
 
@@ -27,13 +35,16 @@ class MyMapView extends React.Component {
   state = {
     region: initialRegion,
     ready: true,
-    filteredMarkers: []
+    activeMarker: 0,
+    markers: markers
   };
 
   setRegion(region) {
     console.log(region);
     if(this.state.ready) {
-      setTimeout(() => this.map.animateToRegion(region,2000), 10);
+      this.setState({region: region});
+      this.map.animateToRegion(region,1000);
+      //setTimeout(() => this.map.animateToRegion(region,2000), 10);
     }
     //this.setState({ region });
   }
@@ -44,7 +55,7 @@ class MyMapView extends React.Component {
 
   getCurrentPosition = () => {
     try {
-      this.setRegion(this.state.region);
+      //this.setRegion(this.state.region);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const region = {
@@ -114,6 +125,33 @@ class MyMapView extends React.Component {
           style={StyleSheet.absoluteFill}
           textStyle={{ color: '#bc8b00' }}
           containerStyle={{backgroundColor: 'white', borderColor: '#BC8B00', }}>
+
+          {!this.state.ready ? null : this.state.markers.map((marker, index) => {
+            const coords = {
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+            };
+
+            const metadata = `Status: ${index}`;
+
+            return (
+              <React.Fragment>
+                <MapView.Marker
+                  key={'Marker'+index}
+                  coordinate={coords}
+                  //>title={marker.stationName}
+                  description={metadata}
+                />
+                <MapView.Circle
+                  key={'Cicle'+index}
+                  center={coords}
+                  radius={marker.radius}
+                  strokeColor='rgb(12, 183, 242)'
+                  fillColor='rgba(12, 183, 242, 0.5)'
+                />
+              </React.Fragment>
+            );
+          })}
         </MapView>
         <TouchableOpacity style={styles.button} activeOpacity = "0.9" onPress={this.getCurrentPosition}>
           <FontAwesome name="location-arrow" size={20} color="white"/>
