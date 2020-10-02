@@ -17,7 +17,10 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need to know your current location to find the near places. Do you allow us to use location service on this device ?"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
