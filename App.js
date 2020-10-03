@@ -14,6 +14,7 @@ function HomeScreen() {
   );
 }
 
+/*
 const saveData = async (level) => {
   try {
     await AsyncStorage.setItem('@level_key', level.toString())
@@ -39,7 +40,7 @@ const readData = async () => {
     console.log(e)
   }
 }
-
+*/
 function SettingsScreen() {
   
   //const data =  readData();

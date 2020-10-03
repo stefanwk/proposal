@@ -8,9 +8,12 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import MapView from 'react-native-maps'
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
 
-const LATITUDE_DELTA = 0.05;
-const LONGITUDE_DELTA = 0.05;
+
+const LATITUDE_DELTA = 0.005;
+const LONGITUDE_DELTA = 0.005;
 
 const initialRegion = {
   latitude: -39.29,
@@ -18,15 +21,26 @@ const initialRegion = {
   latitudeDelta: 10,
   longitudeDelta: 10,
 }
-const markers = [{
+let markers = [{
     latitude:-39.296080,
     longitude: -72.145870,
-    radius:100},
+    radius:100,
+    id: 1,
+    entered: false
+  },
   {
     latitude: -39.287811,
     longitude: -72.226085,
-    radius: 200
+    radius: 200,
+    id: 2,
+    entered: false
   }];
+
+const LOCATION_SETTINGS = {
+  accuracy: Location.Accuracy.High,
+  timeInterval: 2000,
+  distanceInterval: 10,
+};
 
 class MyMapView extends React.Component {
 
@@ -34,57 +48,97 @@ class MyMapView extends React.Component {
 
   state = {
     region: initialRegion,
+    location: null,
     ready: true,
     activeMarker: 0,
     markers: markers
   };
 
-  setRegion(region) {
-    console.log(region);
+  setRegion(region,animate) {
     if(this.state.ready) {
       this.setState({region: region});
-      this.map.animateToRegion(region,1000);
+      animate ? this.animateRegion(region) : null;
       //setTimeout(() => this.map.animateToRegion(region,2000), 10);
     }
     //this.setState({ region });
   }
 
-  componentDidMount() {
-    this.getCurrentPosition();
-  }
-
-  getCurrentPosition = () => {
-    try {
-      //this.setRegion(this.state.region);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const region = {
+  animateRegion = async () => {
+    console.log('animating');
+    let position = await Location.getLastKnownPositionAsync();
+    const region = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA,
           };
-          this.setRegion(region);
-        },
-        (error) => {
-          //TODO: better design
-          switch (error.code) {
-            case 1:
-              if (Platform.OS === "ios") {
-                Alert.alert("", "Para ubicar tu locación habilita permiso para la aplicación en Ajustes - Privacidad - Localización");
-              } else {
-                Alert.alert("", "Para ubicar tu locación habilita permiso para la aplicación en Ajustes - Apps - ExampleApp - Localización");
-              }
-              break;
-            default:
-              Alert.alert("", "Error al detectar tu locación");
-              console.log(error);
-          }
-        }
-      );
-    } catch(e) {
-      alert(e.message || "");
+
+    this.map.animateToRegion(region,1000);
+  }
+
+  componentDidMount() {
+    this._getLocationAsync(true);
+     Location.watchPositionAsync(LOCATION_SETTINGS, location => {
+      this.setState((state, props) => {
+        const now = Date.now();
+        console.log('Location Auto-Update');
+        return {
+          ...state,
+          location,
+          prevTime: now,
+          timeDiff: now - state.prevTime,
+        };
+      });
+      this.checkCircle();
+    });
+  }
+
+  checkCircle() {
+
+    this.state.markers.map((marker, index) => {
+      const markerCoords = [marker.latitude, marker.longitude];
+      const positionCoords = [this.state.location.coords.latitude, this.state.location.coords.longitude];
+
+      let distance = this.computeDistance(markerCoords, positionCoords);
+      distance < marker.radius ? marker.entered = true : null;
+
+      console.log('Marker '+marker.id, ' distance: '+distance);
+
+    })
+  }
+
+  computeDistance = ([prevLat, prevLong], [lat, long]) => {
+    const prevLatInRad = this.toRad(prevLat);
+    const prevLongInRad = this.toRad(prevLong);
+    const latInRad = this.toRad(lat);
+    const longInRad = this.toRad(long);
+
+    return (
+      // In meters
+      6377.830272 * 1000 *
+      Math.acos(
+        Math.sin(prevLatInRad) * Math.sin(latInRad) +
+          Math.cos(prevLatInRad) * Math.cos(latInRad) * Math.cos(longInRad - prevLongInRad),
+      )
+    );
+  }
+
+  toRad = (angle) => {
+    return (angle * Math.PI) / 180;
+  }
+
+  _getLocationAsync = async (animate) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      this.setState({
+        errorMessage: 'Permission to access location was denied',
+      });
     }
+
+    let location = await Location.getCurrentPositionAsync({});
+    this.setState({ location });
+    console.log('Location Manual-Update');
+    animate ? this.animateRegion() : null
   };
 
   onMapReady = (e) => {
@@ -98,20 +152,21 @@ class MyMapView extends React.Component {
   };
 
   onRegionChangeComplete = (region) => {
-    console.log('onRegionChangeComplete', region);
+    console.log('onRegionChangeComplete', region.longitudeDelta, this.state.region.longitudeDelta);
   };
 
   render() {
 
     const { region } = this.state;
     const { children, renderMarker, markers } = this.props;
-    console.log(this.props);
 
     return (
       <View style={styles.container}>
         
         <MapView
+          key = 'Mapview1'
           showsUserLocation
+          followsUserLocation
           userLocationAnnotationTitle={'Ubicación actual'}
 
           ref={ map => { this.map = map }}
@@ -121,7 +176,7 @@ class MyMapView extends React.Component {
           onMapReady={this.onMapReady}
           showsMyLocationButton={true}
           //onRegionChange={this.onRegionChange}
-          //onRegionChangeComplete={this.onRegionChangeComplete}
+          //>onRegionChangeComplete={this.onRegionChangeComplete}
           style={StyleSheet.absoluteFill}
           textStyle={{ color: '#bc8b00' }}
           containerStyle={{backgroundColor: 'white', borderColor: '#BC8B00', }}>
@@ -135,26 +190,26 @@ class MyMapView extends React.Component {
             const metadata = `Status: ${index}`;
 
             return (
-              <React.Fragment>
+              <React.Fragment key = {'Fragment'+marker.id}>
                 <MapView.Marker
-                  key={'Marker'+index}
+                  key={'Marker'+marker.id}
                   coordinate={coords}
                   //>title={marker.stationName}
                   description={metadata}
                 />
                 <MapView.Circle
-                  key={'Cicle'+index}
+                  key={'Cicle'+marker.id}
                   center={coords}
                   radius={marker.radius}
                   strokeColor='rgb(12, 183, 242)'
-                  fillColor='rgba(12, 183, 242, 0.5)'
+                  fillColor={marker.entered ? 'green' : 'rgba(12, 183, 242, 0.5)'}
                 />
               </React.Fragment>
             );
           })}
         </MapView>
-        <TouchableOpacity style={styles.button} activeOpacity = "0.9" onPress={this.getCurrentPosition}>
-          <FontAwesome name="location-arrow" size={20} color="white"/>
+        <TouchableOpacity key = 'boton' style={styles.button} activeOpacity = "0.9" onPress={() => this.animateRegion()}>
+          <FontAwesome key = 'icono' name="location-arrow" size={20} color="white"/>
         </TouchableOpacity>
       </View>
     );
@@ -175,7 +230,7 @@ const styles = StyleSheet.create({
    backgroundColor:'skyblue',
    borderRadius:50,
    marginRight: 10,
-   marginBottom: 30
+   marginBottom: 100
  }
 });
 
