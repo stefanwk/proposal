@@ -14,8 +14,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 
-const LATITUDE_DELTA = 0.005;
-const LONGITUDE_DELTA = 0.005;
+const LATITUDE_DELTA = 0.002;
+const LONGITUDE_DELTA = 0.002;
 
 const initialRegion = {
   latitude: -39.29,
@@ -24,17 +24,24 @@ const initialRegion = {
   longitudeDelta: 10,
 }
 let markers = [{
-    latitude:-39.296080,
-    longitude: -72.145870,
-    radius:100,
+    latitude:-39.2958137,
+    longitude: -72.1448484,
+    radius:5,
     id: 1,
     entered: false
   },
   {
-    latitude: -39.287811,
-    longitude: -72.226085,
-    radius: 200,
+    latitude: -39.2953581,
+    longitude: -72.1444528,
+    radius: 10,
     id: 2,
+    entered: false
+  },
+  {
+    latitude: -39.2519765,
+    longitude: -72.1505987,
+    radius: 30,
+    id: 3,
     entered: false
   }];
 
@@ -227,6 +234,7 @@ class MyMapView extends React.Component {
           //data={markers}
           initialRegion={initialRegion}
           renderMarker={renderMarker}
+          mapType={'hybrid'}
           onMapReady={this.onMapReady}
           showsMyLocationButton={true}
           //onRegionChange={this.onRegionChange}
