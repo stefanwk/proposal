@@ -19,7 +19,12 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need to know your current location to find the near places. Do you allow us to use location service on this device ?"
+        "NSLocationWhenInUseUsageDescription": "We need to know your current location to find the near places. Do you allow us to use location service on this device ?",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ],
+        "LSApplicationQueriesSchemes": ["spotify"]
       }
     },
     "web": {

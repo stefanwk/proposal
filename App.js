@@ -1,19 +1,33 @@
 import React, { useState } from 'react';
-import { Text, View, Button } from 'react-native';
+import { Text, View, Button, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-community/async-storage';
-import Map from './Map';
+import Map, {getLevel} from './Map';
+import Treasure from './Treasure';
 
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home!</Text>
-    </View>
-  );
+const _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('@activeMarker');
+      if (value !== null) {
+        // We have data!!
+        this.setState({activeMarker: parseInt(value)})
+        console.log('Retrieved level ',value);
+      }
+     } catch (error) {
+       // Error retrieving data
+     }
+  }
+
+_storeData = async (activeMarker) => {
+  try {
+    await AsyncStorage.setItem('@activeMarker', activeMarker.toString());
+    console.log('Saved level ',activeMarker);
+  } catch (error) {
+    // Error saving data
+  }
 }
-
 /*
 const saveData = async (level) => {
   try {
@@ -51,8 +65,20 @@ function SettingsScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Settings</Text>
+      <TextInput multiline = {false} onSubmitEditing ={(event) => checkText(event.nativeEvent.text)}/>
+      <Button title={"RESETEAR"} onPress={() => _storeData(0)}/>
     </View>
   );
+}
+
+const checkText = (text) => {
+  console.log(text);
+  values = text.split('-');
+  if(values[0]==='teamo'){
+    let level = parseInt(values[1]);
+    isNaN(level) ? null : _storeData(level);
+  }
+
 }
 
 
@@ -61,11 +87,10 @@ const Tab = createBottomTabNavigator();
 
 export default function App() {
 
-
   return (
     <NavigationContainer>
       <Tab.Navigator
-        initialRouteName = 'Mapa'
+        initialRouteName = 'Clave'
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
@@ -89,7 +114,7 @@ export default function App() {
           tabStyle: { marginTop: 5, marginBottom: -8}
         }}
       >
-        <Tab.Screen name="Clave" component={HomeScreen} />
+        <Tab.Screen name="Clave" component={Treasure} />
         <Tab.Screen name="Mapa" component={Map} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
