@@ -26,14 +26,14 @@ const initialRegion = {
 let markers = [{
     latitude:-39.2958137,
     longitude: -72.1448484,
-    radius:5,
+    radius:20,
     id: 1,
     entered: false
   },
   {
     latitude: -39.2953581,
     longitude: -72.1444528,
-    radius: 10,
+    radius: 20,
     id: 2,
     entered: false
   },
@@ -227,7 +227,7 @@ class MyMapView extends React.Component {
         <MapView
           key = 'Mapview1'
           showsUserLocation
-          followsUserLocation
+          //>followsUserLocation
           userLocationAnnotationTitle={'Ubicación actual'}
 
           ref={ map => { this.map = map }}
